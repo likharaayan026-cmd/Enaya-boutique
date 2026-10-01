@@ -600,6 +600,9 @@
                         <div>
                             <label class="block text-xs font-bold text-burgundy mb-2 uppercase tracking-wider">Select Appointment Date *</label>
                             <input type="date" id="custDate" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold focus:border-gold outline-none transition-all text-sm bg-white">
+                            <p id="dateDisplay" class="text-[11px] text-burgundy font-semibold mt-2 hidden">
+                                <i class="fa-solid fa-calendar-day text-gold"></i> Selected Date: <span id="dateDisplayValue" class="text-goldDark font-bold"></span>
+                            </p>
                         </div>
 
                         <div>
@@ -984,9 +987,19 @@
             const warningBox = document.getElementById('tuesdayWarning');
             const container = document.getElementById('slotsContainer');
             const selectedTimeHidden = document.getElementById('selectedTimeSlot');
+            const dateDisplay = document.getElementById('dateDisplay');
+            const dateDisplayValue = document.getElementById('dateDisplayValue');
             selectedTimeHidden.value = '';
 
-            if (!selectedDateStr) return;
+            if (!selectedDateStr) {
+                dateDisplay.classList.add('hidden');
+                return;
+            }
+
+            // ✅ DD-MM-YYYY format display
+            const [yyyy, mm, dd] = selectedDateStr.split('-');
+            dateDisplayValue.innerText = `${dd}-${mm}-${yyyy}`;
+            dateDisplay.classList.remove('hidden');
 
             const selectedDate = new Date(selectedDateStr + 'T00:00:00');
             const dayOfWeek = selectedDate.getDay();
@@ -1108,10 +1121,9 @@
                 return;
             }
 
-            // Date Formatting
-            const dateObj = new Date(rawDate + 'T00:00:00');
-            const options = { day: 'numeric', month: 'short', year: 'numeric' };
-            const formattedDate = dateObj.toLocaleDateString('en-IN', options);
+            // ✅ Date Formatting in DD-MM-YYYY
+            const [yyyy, mm, dd] = rawDate.split('-');
+            const formattedDate = `${dd}-${mm}-${yyyy}`;
 
             // Mark slot as booked locally & Firebase
             const localKey = 'enaya_booked_' + rawDate;
