@@ -6,7 +6,6 @@
     <title>ENAYA BOUTIQUE | Premium Ladies Tailor & Designer Studio - Gwalior</title>
     <meta name="description" content="Enaya Boutique by Preeti Kosta - Best Ladies Tailor in Tansen Road, Gwalior. Custom Blouse, Designer Suits, Lehengas, Alterations & Expert Fitting.">
     
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -37,7 +36,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
@@ -101,8 +99,10 @@
         ::-webkit-scrollbar-track { background: #FAF7F2; }
         ::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 4px; }
 
+        /* Slot button styles */
         .slot-btn {
             transition: all 0.2s ease-in-out;
+            position: relative;
         }
         .slot-btn.disabled-slot {
             background-color: #E5E7EB !important;
@@ -111,7 +111,6 @@
             cursor: not-allowed !important;
             text-decoration: line-through;
             opacity: 0.7;
-            position: relative;
         }
         .slot-btn.disabled-slot::after {
             content: "🔴";
@@ -119,6 +118,41 @@
             position: absolute;
             top: 2px;
             right: 4px;
+        }
+
+        .slot-btn.past-slot {
+            background-color: #F3F4F6 !important;
+            color: #D1D5DB !important;
+            border-color: #E5E7EB !important;
+            cursor: not-allowed !important;
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+        .slot-btn.past-slot::after {
+            content: "⏰";
+            font-size: 8px;
+            position: absolute;
+            top: 2px;
+            right: 4px;
+        }
+
+        /* SELECTED SLOT — ensures text is clearly visible */
+        .slot-btn.selected-slot {
+            background: linear-gradient(135deg, #5B1E31 0%, #3D1220 100%) !important;
+            color: #F3E5AB !important;
+            border-color: #5B1E31 !important;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(91, 30, 49, 0.35);
+            transform: translateY(-1px);
+        }
+        .slot-btn.selected-slot::after {
+            content: "✓";
+            font-size: 10px;
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            color: #D4AF37;
+            font-weight: 700;
         }
 
         .confirm-modal {
@@ -129,25 +163,15 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        .pre-booked-slot {
-            background-color: #FEE2E2 !important;
-            color: #991B1B !important;
-            border-color: #FECACA !important;
-            cursor: not-allowed !important;
-            text-decoration: line-through;
-            opacity: 0.85;
-        }
-        .pre-booked-slot::after {
-            content: "🔴";
-            font-size: 8px;
-            position: absolute;
-            top: 2px;
-            right: 4px;
-        }
-
-        /* Hide bottom nav when keyboard is open */
         .keyboard-open #mobileBottomNav {
             display: none !important;
+        }
+
+        .date-input-wrapper {
+            position: relative;
+        }
+        .date-input-wrapper input[type="text"] {
+            cursor: pointer;
         }
     </style>
 
@@ -511,7 +535,6 @@
                         </div>
                     </div>
 
-                    <!-- Owner Profile Card (No image) -->
                     <div id="about" class="bg-white rounded-3xl p-8 border-2 border-gold/30 shadow-2xl relative overflow-hidden">
                         <div class="absolute top-0 right-0 w-32 h-32 bg-gold/10 rounded-bl-full pointer-events-none"></div>
                         
@@ -560,7 +583,6 @@
                         <p class="text-xs sm:text-sm text-gray-600 mt-2">Select your date & time. Once booked, the slot gets automatically reserved for you.</p>
                     </div>
 
-                    <!-- Tuesday Warning Alert Banner -->
                     <div id="tuesdayWarning" class="hidden mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-800 text-xs sm:text-sm flex items-center gap-3">
                         <i class="fa-solid fa-triangle-exclamation text-xl text-amber-600 shrink-0"></i>
                         <div>
@@ -569,7 +591,6 @@
                         </div>
                     </div>
 
-                    <!-- Booking Form -->
                     <form id="bookingForm" class="space-y-6">
                         
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -598,11 +619,11 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-burgundy mb-2 uppercase tracking-wider">Select Appointment Date *</label>
-                            <input type="date" id="custDate" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold focus:border-gold outline-none transition-all text-sm bg-white">
-                            <p id="dateDisplay" class="text-[11px] text-burgundy font-semibold mt-2 hidden">
-                                <i class="fa-solid fa-calendar-day text-gold"></i> Selected Date: <span id="dateDisplayValue" class="text-goldDark font-bold"></span>
-                            </p>
+                            <label class="block text-xs font-bold text-burgundy mb-2 uppercase tracking-wider">Select Appointment Date * (DD-MM-YYYY)</label>
+                            <div class="date-input-wrapper">
+                                <input type="text" id="custDateDisplay" readonly placeholder="DD-MM-YYYY" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gold focus:border-gold outline-none transition-all text-sm bg-white cursor-pointer">
+                                <input type="hidden" id="custDate" required>
+                            </div>
                         </div>
 
                         <div>
@@ -805,7 +826,7 @@
         </a>
     </div>
 
-    <!-- Mobile Bottom Navigation (will hide when keyboard opens) -->
+    <!-- Mobile Bottom Navigation -->
     <div id="mobileBottomNav" class="md:hidden fixed bottom-0 left-0 right-0 z-50 glass-header border-t border-gold/30 px-2 py-2 flex items-center justify-around text-center shadow-lg">
         <a href="#services" class="flex flex-col items-center text-charcoal hover:text-burgundy text-[10px] font-medium">
             <i class="fa-solid fa-scissors text-base text-burgundy"></i>
@@ -849,7 +870,6 @@
                 <p class="text-xs text-gray-600 mb-6">Your slot has been successfully reserved. Details below:</p>
                 
                 <div id="confirmDetails" class="bg-cream rounded-2xl p-4 text-left text-sm space-y-2 border border-gold/20 mb-6">
-                    <!-- Filled by JS -->
                 </div>
 
                 <div class="flex flex-col gap-3">
@@ -865,25 +885,52 @@
         </div>
     </div>
 
-    <!-- PRE-BOOKED SLOTS DATA (to simulate rush) -->
+    <!-- Native date picker (hidden) -->
+    <input type="date" id="nativeDatePicker" class="hidden" style="position:absolute; opacity:0; pointer-events:none;">
+
     <script>
-        window.preBookedSlots = {
-            '2026-02-15': ['12:00 PM', '12:20 PM', '02:00 PM', '04:40 PM', '06:00 PM'],
-            '2026-02-16': ['01:00 PM', '03:20 PM', '05:00 PM', '07:20 PM'],
-            '2026-02-17': ['12:40 PM', '02:40 PM', '04:00 PM', '06:40 PM', '08:00 PM'],
-            '2026-02-18': ['12:00 PM', '01:20 PM', '03:00 PM', '05:20 PM', '07:00 PM'],
-            '2026-02-19': ['12:20 PM', '02:20 PM', '04:20 PM', '06:20 PM', '08:20 PM'],
-            '2026-02-20': ['01:40 PM', '03:40 PM', '05:40 PM', '07:40 PM'],
-            '2026-02-21': ['12:00 PM', '12:20 PM', '02:00 PM', '04:40 PM', '06:00 PM', '08:00 PM'],
-            '2026-02-22': ['01:00 PM', '03:20 PM', '05:00 PM', '07:20 PM'],
-        };
+        // ============================================================
+        // 1. DATE FORMATTING UTILITIES (DD-MM-YYYY)
+        // ============================================================
+        function formatDateDDMMYYYY(date) {
+            const d = String(date.getDate()).padStart(2, '0');
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const y = date.getFullYear();
+            return `${d}-${m}-${y}`;
+        }
 
-        function getPreBookedSlotsForDate(dateStr) {
-            const dayOfWeek = new Date(dateStr + 'T00:00:00').getDay();
-            if (dayOfWeek === 2) return [];
+        function formatDateISO(date) {
+            const d = String(date.getDate()).padStart(2, '0');
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const y = date.getFullYear();
+            return `${y}-${m}-${d}`;
+        }
 
-            if (window.preBookedSlots[dateStr]) {
-                return window.preBookedSlots[dateStr];
+        // ============================================================
+        // 2. ROLLING 2-DAY PRE-BOOKED SLOTS
+        // ------------------------------------------------------------
+        // The pre-booked (demo) slots always exist for the NEXT 2 DAYS
+        // counting from today. At midnight (12:00 AM), the window rolls
+        // forward: yesterday drops off, a new day gets added at the end.
+        // This is calculated fresh each time — no static dates.
+        // ============================================================
+        function generatePreBookedSlotsForDate(dateStr) {
+            const date = new Date(dateStr + 'T00:00:00');
+            const dayOfWeek = date.getDay();
+            if (dayOfWeek === 2) return []; // Tuesday closed
+
+            // Only the next 2 days from today get demo pre-bookings.
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const target = new Date(dateStr + 'T00:00:00');
+            target.setHours(0, 0, 0, 0);
+
+            const diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
+
+            // Only apply demo pre-bookings for today, tomorrow, day-after-tomorrow
+            // (0, 1, 2 days from today). After midnight this shifts automatically.
+            if (diffDays < 0 || diffDays > 2) {
+                return [];
             }
 
             const allSlots = [
@@ -897,23 +944,80 @@
                 "07:00 PM", "07:20 PM", "07:40 PM",
                 "08:00 PM", "08:20 PM"
             ];
-            
-            const seed = dateStr.split('-').reduce((acc, val) => acc + parseInt(val), 0);
+
+            // Deterministic per-date seed
+            const seed = parseInt(dateStr.replace(/-/g, ''), 10) % 1000;
             const booked = [];
             allSlots.forEach((slot, index) => {
-                if ((index + seed) % 3 === 0 || (index + seed) % 5 === 0) {
+                if ((index + seed) % 3 === 0 || (index + seed) % 7 === 0) {
                     booked.push(slot);
                 }
             });
-            if (booked.length < 5) {
-                booked.push("12:00 PM", "02:20 PM", "04:40 PM", "06:20 PM", "08:00 PM");
+            // Ensure minimum visual rush
+            if (booked.length < 4) {
+                booked.push("12:00 PM", "01:40 PM", "03:20 PM", "05:00 PM", "07:00 PM");
             }
             return [...new Set(booked)];
         }
-    </script>
 
-    <script>
-        // Splash Screen Control
+        // Cache keyed by date so results stay consistent within a session
+        const preBookedCache = {};
+        let preBookedCacheDayKey = '';
+
+        function getPreBookedSlotsForDate(dateStr) {
+            // Reset cache when the calendar day changes (midnight rollover)
+            const todayKey = formatDateISO(new Date());
+            if (preBookedCacheDayKey !== todayKey) {
+                Object.keys(preBookedCache).forEach(k => delete preBookedCache[k]);
+                preBookedCacheDayKey = todayKey;
+            }
+            if (!preBookedCache[dateStr]) {
+                preBookedCache[dateStr] = generatePreBookedSlotsForDate(dateStr);
+            }
+            return preBookedCache[dateStr];
+        }
+
+        // ============================================================
+        // 3. PAST TIME SLOT DETECTION
+        // ============================================================
+        function isSlotInPast(dateStr, slotText) {
+            const now = new Date();
+            const todayStr = formatDateISO(now);
+            if (dateStr !== todayStr) return false;
+
+            const match = slotText.match(/(\d+):(\d+)\s*(AM|PM)/i);
+            if (!match) return false;
+            let hours = parseInt(match[1], 10);
+            const minutes = parseInt(match[2], 10);
+            const ampm = match[3].toUpperCase();
+            if (ampm === 'PM' && hours !== 12) hours += 12;
+            if (ampm === 'AM' && hours === 12) hours = 0;
+
+            const slotTime = new Date();
+            slotTime.setHours(hours, minutes, 0, 0);
+            return slotTime <= now;
+        }
+
+        // ============================================================
+        // 4. STATE
+        // ============================================================
+        const timeSlots = [
+            "12:00 PM", "12:20 PM", "12:40 PM",
+            "01:00 PM", "01:20 PM", "01:40 PM",
+            "02:00 PM", "02:20 PM", "02:40 PM",
+            "03:00 PM", "03:20 PM", "03:40 PM",
+            "04:00 PM", "04:20 PM", "04:40 PM",
+            "05:00 PM", "05:20 PM", "05:40 PM",
+            "06:00 PM", "06:20 PM", "06:40 PM",
+            "07:00 PM", "07:20 PM", "07:40 PM",
+            "08:00 PM", "08:20 PM"
+        ];
+
+        let currentlySelectedBtn = null;
+
+        // ============================================================
+        // 5. INIT
+        // ============================================================
         window.addEventListener('DOMContentLoaded', () => {
             const splash = document.getElementById('splashScreen');
             if (sessionStorage.getItem('enaya_splash_shown')) {
@@ -922,26 +1026,77 @@
                 sessionStorage.setItem('enaya_splash_shown', 'true');
                 setTimeout(() => {
                     splash.classList.add('opacity-0');
-                    setTimeout(() => {
-                        splash.style.display = 'none';
-                    }, 700);
+                    setTimeout(() => { splash.style.display = 'none'; }, 700);
                 }, 1500);
             }
 
-            const dateInput = document.getElementById('custDate');
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            const minDate = `${yyyy}-${mm}-${dd}`;
-            dateInput.min = minDate;
-            dateInput.value = minDate;
-
-            handleDateSelection(minDate);
+            initDatePicker();
             updateHeaderBoutiqueStatus();
+            initKeyboardHide();
+
+            // Midnight rollover detector — re-renders slots when the day changes
+            setInterval(checkMidnightRollover, 60000); // check every minute
         });
 
-        // Open/Closed Status
+        let lastKnownDay = formatDateISO(new Date());
+        function checkMidnightRollover() {
+            const todayISO = formatDateISO(new Date());
+            if (todayISO !== lastKnownDay) {
+                lastKnownDay = todayISO;
+                // Day changed: refresh the slot view for the currently selected date
+                const selected = document.getElementById('custDate').value;
+                if (selected) handleDateSelection(selected);
+                updateHeaderBoutiqueStatus();
+            }
+        }
+
+        function initDatePicker() {
+            const displayInput = document.getElementById('custDateDisplay');
+            const hiddenInput = document.getElementById('custDate');
+            const nativePicker = document.getElementById('nativeDatePicker');
+
+            const today = new Date();
+            nativePicker.min = formatDateISO(today);
+
+            const todayISO = formatDateISO(today);
+            hiddenInput.value = todayISO;
+            displayInput.value = formatDateDDMMYYYY(today);
+            handleDateSelection(todayISO);
+
+            displayInput.addEventListener('click', () => {
+                nativePicker.showPicker ? nativePicker.showPicker() : nativePicker.click();
+            });
+
+            nativePicker.addEventListener('change', (e) => {
+                const selectedDate = e.target.value;
+                if (!selectedDate) return;
+
+                const dateObj = new Date(selectedDate + 'T00:00:00');
+                const dayOfWeek = dateObj.getDay();
+
+                if (dayOfWeek === 2) {
+                    alert('Enaya Boutique is closed on Tuesdays. Please select another date.');
+                    const t = new Date();
+                    nativePicker.value = formatDateISO(t);
+                    return;
+                }
+
+                const todayStart = new Date();
+                todayStart.setHours(0,0,0,0);
+                if (dateObj < todayStart) {
+                    alert('Cannot select a past date.');
+                    return;
+                }
+
+                hiddenInput.value = selectedDate;
+                displayInput.value = formatDateDDMMYYYY(dateObj);
+                handleDateSelection(selectedDate);
+            });
+        }
+
+        // ============================================================
+        // 6. STATUS
+        // ============================================================
         function updateHeaderBoutiqueStatus() {
             const now = new Date();
             const day = now.getDay();
@@ -964,42 +1119,20 @@
             }
         }
 
-        // Time Slots Definition
-        const timeSlots = [
-            "12:00 PM", "12:20 PM", "12:40 PM",
-            "01:00 PM", "01:20 PM", "01:40 PM",
-            "02:00 PM", "02:20 PM", "02:40 PM",
-            "03:00 PM", "03:20 PM", "03:40 PM",
-            "04:00 PM", "04:20 PM", "04:40 PM",
-            "05:00 PM", "05:20 PM", "05:40 PM",
-            "06:00 PM", "06:20 PM", "06:40 PM",
-            "07:00 PM", "07:20 PM", "07:40 PM",
-            "08:00 PM", "08:20 PM"
-        ];
-
-        let bookedSlotsMap = {};
-
-        document.getElementById('custDate').addEventListener('change', (e) => {
-            handleDateSelection(e.target.value);
-        });
-
+        // ============================================================
+        // 7. DATE SELECTION HANDLER
+        // ============================================================
         function handleDateSelection(selectedDateStr) {
             const warningBox = document.getElementById('tuesdayWarning');
             const container = document.getElementById('slotsContainer');
             const selectedTimeHidden = document.getElementById('selectedTimeSlot');
-            const dateDisplay = document.getElementById('dateDisplay');
-            const dateDisplayValue = document.getElementById('dateDisplayValue');
             selectedTimeHidden.value = '';
-
-            if (!selectedDateStr) {
-                dateDisplay.classList.add('hidden');
-                return;
+            if (currentlySelectedBtn) {
+                currentlySelectedBtn.classList.remove('selected-slot');
+                currentlySelectedBtn = null;
             }
 
-            // ✅ DD-MM-YYYY format display
-            const [yyyy, mm, dd] = selectedDateStr.split('-');
-            dateDisplayValue.innerText = `${dd}-${mm}-${yyyy}`;
-            dateDisplay.classList.remove('hidden');
+            if (!selectedDateStr) return;
 
             const selectedDate = new Date(selectedDateStr + 'T00:00:00');
             const dayOfWeek = selectedDate.getDay();
@@ -1052,18 +1185,21 @@
 
             timeSlots.forEach((slot) => {
                 const isBooked = bookedList.includes(slot);
+                const isPast = isSlotInPast(dateStr, slot);
+
                 const btn = document.createElement('button');
                 btn.type = 'button';
-                btn.className = `slot-btn py-2 px-3 rounded-lg text-xs font-semibold border transition-all text-center relative ${
-                    isBooked 
-                    ? 'disabled-slot' 
-                    : 'bg-white border-gold/40 text-burgundy hover:bg-gold hover:text-burgundy'
-                }`;
-                
-                if (isBooked) {
+
+                if (isBooked || isPast) {
+                    btn.className = `slot-btn py-2 px-3 rounded-lg text-xs font-semibold border transition-all text-center ${isBooked ? 'disabled-slot' : 'past-slot'}`;
                     btn.disabled = true;
-                    btn.innerHTML = `${slot} <span class="block text-[9px] text-red-500 font-bold">BOOKED</span>`;
+                    if (isBooked) {
+                        btn.innerHTML = `${slot} <span class="block text-[9px] text-red-500 font-bold">BOOKED</span>`;
+                    } else {
+                        btn.innerHTML = `${slot} <span class="block text-[9px] text-gray-500 font-bold">PASSED</span>`;
+                    }
                 } else {
+                    btn.className = 'slot-btn py-2 px-3 rounded-lg text-xs font-semibold border transition-all text-center bg-white border-gold/40 text-burgundy hover:bg-gold hover:text-burgundy';
                     btn.innerText = slot;
                     btn.onclick = () => selectSlot(btn, slot);
                 }
@@ -1072,21 +1208,23 @@
             });
         }
 
-        let currentlySelectedBtn = null;
+        // SELECT SLOT — selected slot gets clearly visible styling
         function selectSlot(btn, slot) {
             if (currentlySelectedBtn) {
-                currentlySelectedBtn.classList.remove('burgundy-gradient', 'text-gold', 'border-burgundy');
-                currentlySelectedBtn.classList.add('bg-white', 'text-burgundy', 'border-gold/40');
+                currentlySelectedBtn.classList.remove('selected-slot');
+                currentlySelectedBtn.classList.add('bg-white', 'border-gold/40', 'text-burgundy');
             }
 
-            btn.classList.remove('bg-white', 'text-burgundy', 'border-gold/40');
-            btn.classList.add('burgundy-gradient', 'text-gold', 'border-burgundy');
+            btn.classList.remove('bg-white', 'border-gold/40', 'text-burgundy');
+            btn.classList.add('selected-slot');
             currentlySelectedBtn = btn;
 
             document.getElementById('selectedTimeSlot').value = slot;
         }
 
-        // FORM SUBMISSION - WITH 2 PER DAY LIMIT
+        // ============================================================
+        // 8. FORM SUBMISSION
+        // ============================================================
         document.getElementById('bookingForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -1096,7 +1234,6 @@
             const rawDate = document.getElementById('custDate').value;
             const slot = document.getElementById('selectedTimeSlot').value;
 
-            // Validate mobile number (10 digits)
             if (!/^\d{10}$/.test(phone)) {
                 alert('Please enter a valid 10-digit mobile number.');
                 return;
@@ -1107,8 +1244,7 @@
                 return;
             }
 
-            // Check daily submission limit (max 2 per day)
-            const todayStr = new Date().toISOString().slice(0,10);
+            const todayStr = formatDateISO(new Date());
             let submissionCount = parseInt(localStorage.getItem('enaya_submission_count') || '0');
             let submissionDate = localStorage.getItem('enaya_submission_date');
             if (submissionDate !== todayStr) {
@@ -1121,11 +1257,9 @@
                 return;
             }
 
-            // ✅ Date Formatting in DD-MM-YYYY
-            const [yyyy, mm, dd] = rawDate.split('-');
-            const formattedDate = `${dd}-${mm}-${yyyy}`;
+            const dateObj = new Date(rawDate + 'T00:00:00');
+            const formattedDate = formatDateDDMMYYYY(dateObj);
 
-            // Mark slot as booked locally & Firebase
             const localKey = 'enaya_booked_' + rawDate;
             let localBooked = JSON.parse(localStorage.getItem(localKey) || '[]');
             if (!localBooked.includes(slot)) {
@@ -1134,7 +1268,6 @@
             }
 
             if (window.firebaseDb) {
-                const slotKey = slot.replace(/[\s:]/g, '_');
                 const slotRef = window.dbRef(window.firebaseDb, `appointments/${rawDate}/${slot}`);
                 window.dbSet(slotRef, {
                     name: name,
@@ -1144,13 +1277,6 @@
                 }).catch(err => console.log('FB Set error:', err));
             }
 
-            if (currentlySelectedBtn) {
-                currentlySelectedBtn.disabled = true;
-                currentlySelectedBtn.className = 'slot-btn py-2 px-3 rounded-lg text-xs font-semibold border disabled-slot relative';
-                currentlySelectedBtn.innerHTML = `${slot} <span class="block text-[9px] text-red-500 font-bold">BOOKED</span>`;
-            }
-
-            // Prepare WhatsApp message
             const whatsappMsg = `Hello Enaya Boutique 👋
 
 Maine appointment book ki hai.
@@ -1169,10 +1295,8 @@ Please confirm my appointment.
 Thank you.`;
 
             const encodedMsg = encodeURIComponent(whatsappMsg);
-            const targetNumber = "916267062990";
-            const whatsappURL = `https://wa.me/${targetNumber}?text=${encodedMsg}`;
+            const whatsappURL = `https://wa.me/916267062990?text=${encodedMsg}`;
 
-            // Store current booking details
             window.currentBooking = {
                 name: name,
                 phone: phone,
@@ -1183,23 +1307,24 @@ Thank you.`;
                 whatsappURL: whatsappURL
             };
 
-            // Increment submission count
             submissionCount++;
             localStorage.setItem('enaya_submission_count', submissionCount.toString());
 
-            // Show confirmation modal
             showConfirmationModal(window.currentBooking);
 
-            // Reset form partially
             document.getElementById('bookingForm').reset();
             document.getElementById('selectedTimeSlot').value = '';
-            currentlySelectedBtn = null;
+            if (currentlySelectedBtn) {
+                currentlySelectedBtn.classList.remove('selected-slot');
+                currentlySelectedBtn = null;
+            }
 
-            // Re-render slots to show booked state
             handleDateSelection(rawDate);
         });
 
-        // CONFIRMATION MODAL FUNCTIONS
+        // ============================================================
+        // 9. CONFIRMATION MODAL
+        // ============================================================
         function showConfirmationModal(booking) {
             const modal = document.getElementById('confirmationModal');
             const detailsDiv = document.getElementById('confirmDetails');
@@ -1214,7 +1339,6 @@ Thank you.`;
             `;
 
             waBtn.href = booking.whatsappURL;
-
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         }
@@ -1225,7 +1349,13 @@ Thank you.`;
             modal.classList.remove('flex');
         }
 
-        // DOWNLOAD APPOINTMENT AS PNG
+        document.getElementById('confirmationModal').addEventListener('click', function(e) {
+            if (e.target === this) closeConfirmationModal();
+        });
+
+        // ============================================================
+        // 10. DOWNLOAD APPOINTMENT AS PNG
+        // ============================================================
         function downloadAppointmentImage() {
             if (!window.currentBooking) {
                 alert('No booking data available.');
@@ -1249,18 +1379,11 @@ Thank you.`;
             ctx.strokeRect(12, 12, 576, 676);
 
             ctx.fillStyle = '#D4AF37';
-            ctx.beginPath();
-            ctx.arc(40, 40, 20, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(560, 40, 20, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(40, 660, 20, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(560, 660, 20, 0, Math.PI * 2);
-            ctx.fill();
+            [[40,40],[560,40],[40,660],[560,660]].forEach(([x,y]) => {
+                ctx.beginPath();
+                ctx.arc(x, y, 20, 0, Math.PI * 2);
+                ctx.fill();
+            });
 
             ctx.fillStyle = '#D4AF37';
             ctx.font = 'bold 36px "Playfair Display", serif';
@@ -1321,7 +1444,9 @@ Thank you.`;
             link.click();
         }
 
-        // Gallery Lightbox
+        // ============================================================
+        // 11. LIGHTBOX
+        // ============================================================
         function openLightbox(imgSrc, caption) {
             const modal = document.getElementById('lightbox');
             document.getElementById('lightboxImg').src = imgSrc;
@@ -1329,58 +1454,39 @@ Thank you.`;
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         }
-
         function closeLightbox() {
             const modal = document.getElementById('lightbox');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
         }
 
-        // Close confirmation modal on background click
-        document.getElementById('confirmationModal').addEventListener('click', function(e) {
-            if (e.target === this) closeConfirmationModal();
-        });
-
-        // ========== KEYBOARD HIDE BOTTOM NAV ==========
-        (function() {
-            const bottomNav = document.getElementById('mobileBottomNav');
+        // ============================================================
+        // 12. KEYBOARD HIDE BOTTOM NAV
+        // ============================================================
+        function initKeyboardHide() {
             const inputs = document.querySelectorAll('input, select, textarea');
-
-            // Hide on focus, show on blur
             inputs.forEach(el => {
                 el.addEventListener('focus', () => {
-                    if (window.innerWidth < 768) {
-                        document.body.classList.add('keyboard-open');
-                    }
+                    if (window.innerWidth < 768) document.body.classList.add('keyboard-open');
                 });
                 el.addEventListener('blur', () => {
-                    if (window.innerWidth < 768) {
-                        document.body.classList.remove('keyboard-open');
-                    }
+                    if (window.innerWidth < 768) document.body.classList.remove('keyboard-open');
                 });
             });
 
-            // Also hide when visual viewport shrinks (keyboard opens)
             if (window.visualViewport) {
                 window.visualViewport.addEventListener('resize', () => {
                     if (window.innerWidth < 768) {
                         const isKeyboardOpen = window.visualViewport.height < window.innerHeight * 0.8;
-                        if (isKeyboardOpen) {
-                            document.body.classList.add('keyboard-open');
-                        } else {
-                            document.body.classList.remove('keyboard-open');
-                        }
+                        document.body.classList.toggle('keyboard-open', isKeyboardOpen);
                     }
                 });
             }
 
-            // Ensure it's shown on orientation change / resize
             window.addEventListener('resize', () => {
-                if (window.innerWidth >= 768) {
-                    document.body.classList.remove('keyboard-open');
-                }
+                if (window.innerWidth >= 768) document.body.classList.remove('keyboard-open');
             });
-        })();
+        }
     </script>
 </body>
 </html>
