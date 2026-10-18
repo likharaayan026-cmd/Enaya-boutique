@@ -191,6 +191,32 @@
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
+
+        /* Gallery overlay */
+        .gallery-overlay {
+            background: linear-gradient(to top, rgba(91, 30, 49, 0.92) 0%, rgba(91, 30, 49, 0.4) 40%, transparent 100%);
+        }
+
+        /* +N overlay */
+        .more-overlay {
+            background: rgba(91, 30, 49, 0.85);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+        }
+
+        /* Download button */
+        .download-btn {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .gallery-card:hover .download-btn {
+            opacity: 1;
+        }
+        @media (max-width: 640px) {
+            .download-btn {
+                opacity: 1;
+            }
+        }
     </style>
 
     <script type="application/ld+json">
@@ -693,6 +719,14 @@
                 <!-- Real gallery -->
                 <div id="dynamicGallery" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
 
+                <!-- View All button -->
+                <div id="galleryViewAllWrap" class="hidden text-center mt-8">
+                    <button id="galleryViewAllBtn" class="inline-flex items-center gap-2 burgundy-gradient text-gold font-bold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all text-sm">
+                        <i class="fa-solid fa-images"></i>
+                        <span id="galleryViewAllText">View All</span>
+                    </button>
+                </div>
+
                 <!-- Empty state -->
                 <div id="galleryEmpty" class="hidden text-center py-16">
                     <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-blush flex items-center justify-center">
@@ -737,7 +771,7 @@
             </div>
         </section>
 
-        <!-- Contact & Google Map Location Section (UPDATED WITH NEW LINK) -->
+        <!-- Contact & Google Map Location Section -->
         <section id="contact" class="py-16 bg-blush/40 border-t border-gold/20">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
@@ -801,7 +835,6 @@
                         </div>
                     </div>
 
-                    <!-- UPDATED MAP IFRAME -->
                     <div class="lg:col-span-7 rounded-3xl overflow-hidden border-2 border-gold/30 shadow-xl min-h-[350px] relative bg-gray-200">
                         <iframe 
                             src="https://maps.google.com/maps?q=Inaya%20Boutique%2C%20Gwalior&t=&z=17&ie=UTF8&iwloc=&output=embed" 
@@ -832,7 +865,6 @@
                 <div class="flex items-center gap-4 text-xl text-gold">
                     <a href="https://wa.me/916267062990" target="_blank" class="w-10 h-10 rounded-full bg-burgundy flex items-center justify-center border border-gold/30 hover:bg-gold hover:text-burgundy transition-all"><i class="fa-brands fa-whatsapp"></i></a>
                     <a href="tel:6267062990" class="w-10 h-10 rounded-full bg-burgundy flex items-center justify-center border border-gold/30 hover:bg-gold hover:text-burgundy transition-all"><i class="fa-solid fa-phone"></i></a>
-                    <!-- UPDATED FOOTER MAP LINK -->
                     <a href="https://maps.app.goo.gl/iXtBb9xCeVWhzfB96?g_st=ac" target="_blank" class="w-10 h-10 rounded-full bg-burgundy flex items-center justify-center border border-gold/30 hover:bg-gold hover:text-burgundy transition-all"><i class="fa-solid fa-location-dot"></i></a>
                 </div>
             </div>
@@ -874,12 +906,38 @@
         </a>
     </div>
 
-    <!-- Lightbox Modal -->
-    <div id="lightbox" class="fixed inset-0 z-50 bg-black/90 hidden items-center justify-center p-4" onclick="closeLightbox()">
-        <button class="absolute top-6 right-6 text-white text-3xl font-bold hover:text-gold" onclick="closeLightbox()">&times;</button>
-        <div class="max-w-3xl max-h-[90vh] text-center" onclick="event.stopPropagation()">
-            <img id="lightboxImg" class="max-w-full max-h-[80vh] rounded-2xl mx-auto shadow-2xl" src="" alt="Zoomed Work">
-            <p id="lightboxCaption" class="text-gold font-serif mt-4 text-base"></p>
+    <!-- Lightbox Modal (with navigation + download) -->
+    <div id="lightbox" class="fixed inset-0 z-50 bg-black/95 hidden items-center justify-center p-4" onclick="closeLightbox()">
+        <!-- Close -->
+        <button class="absolute top-4 right-4 z-30 text-white text-3xl font-bold hover:text-gold w-10 h-10 flex items-center justify-center rounded-full bg-black/40" onclick="closeLightbox()">&times;</button>
+
+        <!-- Prev -->
+        <button id="lbPrev" class="absolute left-2 sm:left-4 z-30 text-white text-2xl w-11 h-11 rounded-full bg-black/50 hover:bg-gold hover:text-burgundy flex items-center justify-center transition-all" onclick="event.stopPropagation(); lightboxPrev()">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <!-- Next -->
+        <button id="lbNext" class="absolute right-2 sm:right-4 z-30 text-white text-2xl w-11 h-11 rounded-full bg-black/50 hover:bg-gold hover:text-burgundy flex items-center justify-center transition-all" onclick="event.stopPropagation(); lightboxNext()">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+
+        <!-- Image container -->
+        <div class="max-w-4xl w-full max-h-[92vh] flex flex-col items-center" onclick="event.stopPropagation()">
+            <div class="relative w-full flex justify-center">
+                <img id="lightboxImg" class="max-w-full max-h-[72vh] rounded-2xl mx-auto shadow-2xl object-contain bg-black/20" src="" alt="Zoomed Work">
+                <div id="lightboxCounter" class="absolute top-2 left-2 bg-black/60 text-goldLight text-xs font-bold px-3 py-1 rounded-full"></div>
+            </div>
+
+            <p id="lightboxCaption" class="text-gold font-serif mt-3 text-base text-center px-2"></p>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-3 mt-3 flex-wrap justify-center">
+                <a id="lightboxDownload" href="#" download class="inline-flex items-center gap-2 bg-gold text-burgundy font-bold px-5 py-2.5 rounded-xl text-sm shadow-lg hover:bg-goldDark hover:text-white transition-all">
+                    <i class="fa-solid fa-download"></i> Download Image
+                </a>
+                <a id="lightboxWhatsapp" href="#" target="_blank" class="inline-flex items-center gap-2 bg-emerald-600 text-white font-bold px-5 py-2.5 rounded-xl text-sm shadow-lg hover:bg-emerald-700 transition-all">
+                    <i class="fa-brands fa-whatsapp"></i> Enquire on WhatsApp
+                </a>
+            </div>
         </div>
     </div>
 
@@ -1452,20 +1510,90 @@ Thank you.`;
         }
 
         // ============================================================
-        // 11. LIGHTBOX
+        // 11. LIGHTBOX WITH CAROUSEL + DOWNLOAD
         // ============================================================
-        function openLightbox(imgSrc, caption) {
+        let galleryItems = [];
+        let lightboxAllItems = [];
+        let lightboxIndex = 0;
+        const MAX_TILES = 4;
+
+        function openLightboxAt(index, items) {
+            lightboxAllItems = items;
+            lightboxIndex = index;
             const modal = document.getElementById('lightbox');
-            document.getElementById('lightboxImg').src = imgSrc;
-            document.getElementById('lightboxCaption').innerText = caption || '';
             modal.classList.remove('hidden');
             modal.classList.add('flex');
+            renderLightbox();
+            document.body.style.overflow = 'hidden';
         }
+
+        function renderLightbox() {
+            if (!lightboxAllItems.length) return;
+
+            if (lightboxIndex < 0) lightboxIndex = lightboxAllItems.length - 1;
+            if (lightboxIndex >= lightboxAllItems.length) lightboxIndex = 0;
+
+            const item = lightboxAllItems[lightboxIndex];
+            const img = document.getElementById('lightboxImg');
+            const caption = document.getElementById('lightboxCaption');
+            const counter = document.getElementById('lightboxCounter');
+            const dl = document.getElementById('lightboxDownload');
+            const wa = document.getElementById('lightboxWhatsapp');
+
+            img.src = item.url;
+            img.alt = item.title || 'Our Work';
+
+            const title = item.title || 'Our Work';
+            const category = item.category || 'Design';
+            caption.textContent = `${title} • ${category}`;
+
+            counter.textContent = `${lightboxIndex + 1} / ${lightboxAllItems.length}`;
+
+            // Download link
+            dl.href = item.url;
+            const ext = (item.url.split('.').pop().split('?')[0] || 'jpg').toLowerCase();
+            const safeExt = ['jpg','jpeg','png','webp','gif'].includes(ext) ? ext : 'jpg';
+            dl.setAttribute('download', `enaya-design-${lightboxIndex + 1}.${safeExt}`);
+
+            // WhatsApp enquiry
+            const waMsg = `Hello Enaya Boutique 👋\n\nMujhe ye design pasand aaya:\n📸 ${title}\n🔗 ${item.url}\n\nKya aap ise stitch kar sakte hain?`;
+            wa.href = `https://wa.me/916267062990?text=${encodeURIComponent(waMsg)}`;
+
+            // Show/hide nav if only 1 image
+            const prevBtn = document.getElementById('lbPrev');
+            const nextBtn = document.getElementById('lbNext');
+            const showNav = lightboxAllItems.length > 1;
+            prevBtn.style.display = showNav ? 'flex' : 'none';
+            nextBtn.style.display = showNav ? 'flex' : 'none';
+        }
+
+        function lightboxPrev() {
+            lightboxIndex--;
+            renderLightbox();
+        }
+
+        function lightboxNext() {
+            lightboxIndex++;
+            renderLightbox();
+        }
+
         function closeLightbox() {
             const modal = document.getElementById('lightbox');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
+            document.body.style.overflow = '';
+            lightboxAllItems = [];
         }
+
+        // Keyboard nav
+        document.addEventListener('keydown', (e) => {
+            const modal = document.getElementById('lightbox');
+            if (!modal.classList.contains('hidden')) {
+                if (e.key === 'ArrowLeft') lightboxPrev();
+                if (e.key === 'ArrowRight') lightboxNext();
+                if (e.key === 'Escape') closeLightbox();
+            }
+        });
 
         // ============================================================
         // 12. KEYBOARD HIDE BOTTOM NAV
@@ -1496,7 +1624,7 @@ Thank you.`;
         }
 
         // ============================================================
-        // 13. DYNAMIC GALLERY — REAL FIREBASE DATA
+        // 13. DYNAMIC GALLERY — FIREBASE + "MAX 4 + N MORE" LOGIC
         // ============================================================
         function initGallery() {
             const loadingEl = document.getElementById('galleryLoading');
@@ -1529,46 +1657,25 @@ Thank you.`;
                 if (!data || Object.keys(data).length === 0) {
                     gridEl.classList.add('hidden');
                     emptyEl.classList.remove('hidden');
+                    document.getElementById('galleryViewAllWrap').classList.add('hidden');
                     return;
                 }
 
-                const items = Object.entries(data)
+                galleryItems = Object.entries(data)
                     .map(([id, val]) => ({ id, ...val }))
                     .filter(item => item.url && item.url.trim() !== '')
                     .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
-                if (items.length === 0) {
+                if (galleryItems.length === 0) {
                     gridEl.classList.add('hidden');
                     emptyEl.classList.remove('hidden');
+                    document.getElementById('galleryViewAllWrap').classList.add('hidden');
                     return;
                 }
 
                 gridEl.classList.remove('hidden');
                 emptyEl.classList.add('hidden');
-                gridEl.innerHTML = '';
-
-                items.forEach((item, index) => {
-                    const card = document.createElement('div');
-                    card.className = 'gallery-card rounded-2xl overflow-hidden shadow-md group relative aspect-[3/4] bg-gray-200 cursor-pointer';
-                    card.style.animationDelay = (index * 50) + 'ms';
-                    card.onclick = () => openLightbox(item.url, item.title);
-
-                    const safeTitle = escapeHtml(item.title || 'Our Work');
-                    const safeCategory = escapeHtml(item.category || 'Design');
-
-                    card.innerHTML = `
-                        <img src="${item.url}"
-                             alt="${safeTitle}"
-                             loading="lazy"
-                             class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
-                             onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full flex flex-col items-center justify-center bg-blush text-burgundy p-4 text-center\\'><i class=\\'fa-solid fa-image text-3xl mb-2 opacity-40\\'></i><p class=\\'text-xs font-semibold\\'>${safeTitle}</p></div>'">
-                        <div class="absolute inset-0 bg-gradient-to-t from-burgundy/90 via-burgundy/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-4 text-white">
-                            <p class="text-xs font-semibold line-clamp-2">${safeTitle}</p>
-                            <span class="inline-block mt-1 text-[10px] uppercase tracking-wider text-goldLight font-bold">${safeCategory}</span>
-                        </div>
-                    `;
-                    gridEl.appendChild(card);
-                });
+                renderGalleryTiles(gridEl);
             }, (error) => {
                 console.error('Gallery load error:', error);
                 loadingEl.classList.add('hidden');
@@ -1576,6 +1683,77 @@ Thank you.`;
             });
         }
 
+        function renderGalleryTiles(gridEl) {
+            gridEl.innerHTML = '';
+
+            const total = galleryItems.length;
+            const showCount = Math.min(total, MAX_TILES);
+            const extra = total > MAX_TILES ? total - MAX_TILES : 0;
+
+            for (let i = 0; i < showCount; i++) {
+                const item = galleryItems[i];
+                const isLastTileWithOverflow = (i === MAX_TILES - 1 && extra > 0);
+
+                const card = document.createElement('div');
+                card.className = 'gallery-card rounded-2xl overflow-hidden shadow-md group relative aspect-[3/4] bg-gray-200 cursor-pointer';
+                card.style.animationDelay = (i * 50) + 'ms';
+
+                const safeTitle = escapeHtml(item.title || 'Our Work');
+                const safeCategory = escapeHtml(item.category || 'Design');
+
+                card.onclick = () => {
+                    if (isLastTileWithOverflow) {
+                        // open at first image of the full set
+                        openLightboxAt(0, galleryItems);
+                    } else {
+                        openLightboxAt(i, galleryItems);
+                    }
+                };
+
+                // Build inner HTML. For last tile with overflow → show +N overlay
+                let overlayHtml = '';
+                if (isLastTileWithOverflow) {
+                    overlayHtml = `
+                        <div class="absolute inset-0 more-overlay flex flex-col items-center justify-center text-gold z-10">
+                            <span class="font-serif font-bold text-4xl leading-none">+${extra}</span>
+                            <span class="text-[10px] uppercase tracking-widest text-goldLight mt-1 font-semibold">More</span>
+                            <i class="fa-solid fa-images mt-2 text-lg text-goldLight/80"></i>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <img src="${item.url}"
+                         alt="${safeTitle}"
+                         loading="lazy"
+                         class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                         onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full flex flex-col items-center justify-center bg-blush text-burgundy p-4 text-center\\'><i class=\\'fa-solid fa-image text-3xl mb-2 opacity-40\\'></i><p class=\\'text-xs font-semibold\\'>${safeTitle}</p></div>'">
+                    <div class="absolute inset-0 gallery-overlay opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-3 text-white pointer-events-none">
+                        <p class="text-xs font-semibold line-clamp-2">${safeTitle}</p>
+                        <span class="inline-block mt-1 text-[10px] uppercase tracking-wider text-goldLight font-bold">${safeCategory}</span>
+                    </div>
+                    ${overlayHtml}
+                `;
+                gridEl.appendChild(card);
+            }
+
+            // Show "View All" button if overflow
+            const viewAllWrap = document.getElementById('galleryViewAllWrap');
+            const viewAllText = document.getElementById('galleryViewAllText');
+            const viewAllBtn = document.getElementById('galleryViewAllBtn');
+
+            if (total > MAX_TILES) {
+                viewAllWrap.classList.remove('hidden');
+                viewAllText.textContent = `View All ${total} Designs`;
+                viewAllBtn.onclick = () => openLightboxAt(0, galleryItems);
+            } else {
+                viewAllWrap.classList.add('hidden');
+            }
+        }
+
+        // ============================================================
+        // 14. UTIL
+        // ============================================================
         function escapeHtml(str) {
             if (!str) return '';
             return String(str).replace(/[&<>"']/g, m => ({
