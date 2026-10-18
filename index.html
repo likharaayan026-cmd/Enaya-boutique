@@ -204,18 +204,14 @@
             -webkit-backdrop-filter: blur(3px);
         }
 
-        /* Download button */
-        .download-btn {
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        /* Prevent body scroll when lightbox open */
+        body.lightbox-open {
+            overflow: hidden !important;
         }
-        .gallery-card:hover .download-btn {
-            opacity: 1;
-        }
-        @media (max-width: 640px) {
-            .download-btn {
-                opacity: 1;
-            }
+
+        /* Lightbox image fade */
+        #lightboxImg {
+            transition: opacity 0.2s ease;
         }
     </style>
 
@@ -682,7 +678,6 @@
                             <input type="hidden" id="selectedTimeSlot" required>
                         </div>
 
-                        <!-- UPDATED WHATSAPP BUTTON -->
                         <div class="pt-6">
                             <button type="submit" id="submitBtn" class="w-full burgundy-gradient text-gold font-bold py-4 rounded-xl shadow-xl hover:shadow-2xl hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-3 text-base sm:text-lg">
                                 <i class="fa-solid fa-lock text-goldLight"></i>
@@ -698,7 +693,7 @@
             </div>
         </section>
 
-        <!-- Gallery Section (Real Firebase Data) -->
+        <!-- Gallery Section -->
         <section id="gallery" class="py-16 bg-blush/30">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center max-w-2xl mx-auto mb-10">
@@ -906,7 +901,7 @@
         </a>
     </div>
 
-    <!-- Lightbox Modal (with navigation + download) -->
+    <!-- Lightbox Modal (download only, no WhatsApp enquiry) -->
     <div id="lightbox" class="fixed inset-0 z-50 bg-black/95 hidden items-center justify-center p-4" onclick="closeLightbox()">
         <!-- Close -->
         <button class="absolute top-4 right-4 z-30 text-white text-3xl font-bold hover:text-gold w-10 h-10 flex items-center justify-center rounded-full bg-black/40" onclick="closeLightbox()">&times;</button>
@@ -929,13 +924,10 @@
 
             <p id="lightboxCaption" class="text-gold font-serif mt-3 text-base text-center px-2"></p>
 
-            <!-- Actions -->
+            <!-- Actions: download only -->
             <div class="flex items-center gap-3 mt-3 flex-wrap justify-center">
-                <a id="lightboxDownload" href="#" download class="inline-flex items-center gap-2 bg-gold text-burgundy font-bold px-5 py-2.5 rounded-xl text-sm shadow-lg hover:bg-goldDark hover:text-white transition-all">
+                <a id="lightboxDownload" href="#" download class="inline-flex items-center gap-2 bg-gold text-burgundy font-bold px-6 py-2.5 rounded-xl text-sm shadow-lg hover:bg-goldDark hover:text-white transition-all">
                     <i class="fa-solid fa-download"></i> Download Image
-                </a>
-                <a id="lightboxWhatsapp" href="#" target="_blank" class="inline-flex items-center gap-2 bg-emerald-600 text-white font-bold px-5 py-2.5 rounded-xl text-sm shadow-lg hover:bg-emerald-700 transition-all">
-                    <i class="fa-brands fa-whatsapp"></i> Enquire on WhatsApp
                 </a>
             </div>
         </div>
@@ -971,6 +963,55 @@
     <input type="date" id="nativeDatePicker" class="hidden" style="position:absolute; opacity:0; pointer-events:none;">
 
     <script>
+        // ============================================================
+        // 0. HISTORY / BACK-BUTTON STATE MANAGEMENT
+        // ============================================================
+        let lightboxHistoryPushed = false;
+        let rootGuardArmed = false;
+
+        function armRootGuard() {
+            // Push a guard entry so the very first back doesn't exit the app
+            try {
+                history.pushState({ root: true }, '', location.href);
+                rootGuardArmed = true;
+            } catch (e) { /* ignore */ }
+        }
+
+        function pushLightboxHistory() {
+            try {
+                history.pushState({ lightbox: true }, '', location.href);
+                lightboxHistoryPushed = true;
+            } catch (e) { /* ignore */ }
+        }
+
+        function scrollToBooking() {
+            const target = document.getElementById('appointment');
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            // Also update URL hash without adding a new history entry
+            try { history.replaceState(history.state, '', '#appointment'); } catch (e) {}
+        }
+
+        window.addEventListener('popstate', function () {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxOpen = lightbox && !lightbox.classList.contains('hidden');
+
+            if (lightboxOpen) {
+                // Close lightbox silently (don't touch history — the popstate already consumed it)
+                closeLightbox(true);
+                // Re-arm guard so subsequent back presses also don't exit
+                armRootGuard();
+                // Redirect user to booking section
+                scrollToBooking();
+                return;
+            }
+
+            // No lightbox open → user is at root guard. Re-arm and go to booking.
+            armRootGuard();
+            scrollToBooking();
+        });
+
         // ============================================================
         // 1. DATE FORMATTING UTILITIES
         // ============================================================
@@ -1086,6 +1127,9 @@
         // 5. INIT
         // ============================================================
         window.addEventListener('DOMContentLoaded', () => {
+            // Arm root guard so first back press doesn't exit app
+            armRootGuard();
+
             const splash = document.getElementById('splashScreen');
             if (sessionStorage.getItem('enaya_splash_shown')) {
                 splash.style.display = 'none';
@@ -1510,7 +1554,7 @@ Thank you.`;
         }
 
         // ============================================================
-        // 11. LIGHTBOX WITH CAROUSEL + DOWNLOAD
+        // 11. LIGHTBOX (download only)
         // ============================================================
         let galleryItems = [];
         let lightboxAllItems = [];
@@ -1523,8 +1567,11 @@ Thank you.`;
             const modal = document.getElementById('lightbox');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
+            document.body.classList.add('lightbox-open');
             renderLightbox();
-            document.body.style.overflow = 'hidden';
+
+            // Push history entry so back button closes lightbox
+            pushLightboxHistory();
         }
 
         function renderLightbox() {
@@ -1538,7 +1585,6 @@ Thank you.`;
             const caption = document.getElementById('lightboxCaption');
             const counter = document.getElementById('lightboxCounter');
             const dl = document.getElementById('lightboxDownload');
-            const wa = document.getElementById('lightboxWhatsapp');
 
             img.src = item.url;
             img.alt = item.title || 'Our Work';
@@ -1554,10 +1600,6 @@ Thank you.`;
             const ext = (item.url.split('.').pop().split('?')[0] || 'jpg').toLowerCase();
             const safeExt = ['jpg','jpeg','png','webp','gif'].includes(ext) ? ext : 'jpg';
             dl.setAttribute('download', `enaya-design-${lightboxIndex + 1}.${safeExt}`);
-
-            // WhatsApp enquiry
-            const waMsg = `Hello Enaya Boutique 👋\n\nMujhe ye design pasand aaya:\n📸 ${title}\n🔗 ${item.url}\n\nKya aap ise stitch kar sakte hain?`;
-            wa.href = `https://wa.me/916267062990?text=${encodeURIComponent(waMsg)}`;
 
             // Show/hide nav if only 1 image
             const prevBtn = document.getElementById('lbPrev');
@@ -1577,18 +1619,28 @@ Thank you.`;
             renderLightbox();
         }
 
-        function closeLightbox() {
+        // silent = true means "don't touch history" (called from popstate)
+        function closeLightbox(silent) {
             const modal = document.getElementById('lightbox');
+            if (!modal) return;
+            const wasOpen = !modal.classList.contains('hidden');
+
             modal.classList.add('hidden');
             modal.classList.remove('flex');
-            document.body.style.overflow = '';
+            document.body.classList.remove('lightbox-open');
             lightboxAllItems = [];
+
+            if (wasOpen && !silent && lightboxHistoryPushed) {
+                // Consume the history entry we pushed on open
+                lightboxHistoryPushed = false;
+                try { history.back(); } catch (e) { /* ignore */ }
+            }
         }
 
         // Keyboard nav
         document.addEventListener('keydown', (e) => {
             const modal = document.getElementById('lightbox');
-            if (!modal.classList.contains('hidden')) {
+            if (modal && !modal.classList.contains('hidden')) {
                 if (e.key === 'ArrowLeft') lightboxPrev();
                 if (e.key === 'ArrowRight') lightboxNext();
                 if (e.key === 'Escape') closeLightbox();
@@ -1703,18 +1755,16 @@ Thank you.`;
 
                 card.onclick = () => {
                     if (isLastTileWithOverflow) {
-                        // open at first image of the full set
                         openLightboxAt(0, galleryItems);
                     } else {
                         openLightboxAt(i, galleryItems);
                     }
                 };
 
-                // Build inner HTML. For last tile with overflow → show +N overlay
                 let overlayHtml = '';
                 if (isLastTileWithOverflow) {
                     overlayHtml = `
-                        <div class="absolute inset-0 more-overlay flex flex-col items-center justify-center text-gold z-10">
+                        <div class="absolute inset-0 more-overlay flex flex-col items-center justify-center text-gold z-10 pointer-events-none">
                             <span class="font-serif font-bold text-4xl leading-none">+${extra}</span>
                             <span class="text-[10px] uppercase tracking-widest text-goldLight mt-1 font-semibold">More</span>
                             <i class="fa-solid fa-images mt-2 text-lg text-goldLight/80"></i>
@@ -1737,7 +1787,6 @@ Thank you.`;
                 gridEl.appendChild(card);
             }
 
-            // Show "View All" button if overflow
             const viewAllWrap = document.getElementById('galleryViewAllWrap');
             const viewAllText = document.getElementById('galleryViewAllText');
             const viewAllBtn = document.getElementById('galleryViewAllBtn');
